@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
 
@@ -62,8 +62,10 @@ namespace Quiz
                             string login = Console.ReadLine();
                             Console.Write("Enter new password: ");
                             string password = Console.ReadLine();
+                            Console.Write("Enter data of birsday: ");
+                            string data = Console.ReadLine();
 
-                            Identification.Registration(login, password, DateTime.Now);
+                            Identification.Registration(login, password, DateTime.Parse(data));
                             logger.Info($"New user registered with login: {login}");
                         }
                         break;
