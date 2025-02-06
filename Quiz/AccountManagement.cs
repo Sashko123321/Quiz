@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text;
+using System.Collections.Generic;
 
 namespace Quiz;
 
 public static class AccountManagement
 {
     private static Logger logger = new Logger("logs.txt");
-
 
     public static void EditAccount(string login)
     {
@@ -16,7 +16,7 @@ public static class AccountManagement
         try
         {
             logger.Info($"Attempting to edit account: {login}");
-            string[] accounts;
+            List<string> accounts = new List<string>();
 
             using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             using (StreamReader reader = new StreamReader(fileStream, Encoding.UTF8))
@@ -28,10 +28,17 @@ public static class AccountManagement
                     return;
                 }
 
-                accounts = reader.ReadToEnd().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        accounts.Add(line);
+                    }
+                }
             }
 
-            for (int i = 0; i < accounts.Length; i++)
+            for (int i = 0; i < accounts.Count; i++)
             {
                 string[] data = accounts[i].Split(',');
                 if (data[0] == login)
