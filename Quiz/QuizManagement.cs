@@ -1,4 +1,4 @@
-﻿using Quiz;
+using Quiz;
 using System.Text;
 
 public static class QuizManagement
@@ -14,62 +14,66 @@ public static class QuizManagement
         {
             logger.Info($"Quiz '{quizName}' started by user '{login}'.");
 
-            string content = File.ReadAllText(filePath);
-            string[] questions = content.Split(';', StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (var question in questions)
+            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
-                totalQuestions++;
-                string[] parts = question.Split('&');
-                if (parts.Length == 2)
+                using (StreamReader streamReader = new StreamReader(fileStream, Encoding.UTF8))
                 {
-                    string pointsPart = parts[0];
-                    string questionAndAnswers = parts[1];
-
-                    string[] questionParts = questionAndAnswers.Split('|');
-                    if (questionParts.Length == 2)
+                    string line;
+                    while ((line = streamReader.ReadLine()) != null)
                     {
-                        string questionText = questionParts[0];
-                        string answersPart = questionParts[1];
-
-                        string[] answers = answersPart.Split(',');
-                        Console.WriteLine($"Question: {questionText}");
-                        for (int i = 0; i < answers.Length; i++)
+                        totalQuestions++;
+                        string[] parts = line.Split('&');
+                        if (parts.Length == 2)
                         {
-                            string[] answerParts = answers[i].Split('~');
-                            if (answerParts.Length == 2)
-                            {
-                                string answerText = answerParts[0].Trim();
-                                bool isCorrect = answerParts[1].Trim().ToLower() == "true";
+                            string pointsPart = parts[0];
+                            string questionAndAnswers = parts[1];
 
-                                Console.WriteLine($"{i + 1}. {answerText}");
+                            string[] questionParts = questionAndAnswers.Split('|');
+                            if (questionParts.Length == 2)
+                            {
+                                string questionText = questionParts[0];
+                                string answersPart = questionParts[1];
+
+                                string[] answers = answersPart.Split(',');
+                                Console.WriteLine($"Question: {questionText}");
+                                for (int i = 0; i < answers.Length; i++)
+                                {
+                                    string[] answerParts = answers[i].Split('~');
+                                    if (answerParts.Length == 2)
+                                    {
+                                        string answerText = answerParts[0].Trim();
+                                        bool isCorrect = answerParts[1].Trim().ToLower() == "true";
+
+                                        Console.WriteLine($"{i + 1}. {answerText}");
+                                    }
+                                }
+
+                                Console.Write("Enter your answer (1-4): ");
+                                int userAnswer;
+                                bool isValid = int.TryParse(Console.ReadLine(), out userAnswer) && userAnswer >= 1 && userAnswer <= 4;
+
+                                if (isValid)
+                                {
+                                    string[] correctAnswerParts = answers[userAnswer - 1].Split('~');
+                                    bool isCorrectAnswer = correctAnswerParts[1].Trim().ToLower() == "true";
+
+                                    if (isCorrectAnswer)
+                                    {
+                                        Console.WriteLine("Correct!");
+                                        totalPoints += int.Parse(pointsPart);
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Incorrect!");
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Invalid input.");
+                                }
+                                Console.Clear();
                             }
                         }
-
-                        Console.Write("Enter your answer (1-4): ");
-                        int userAnswer;
-                        bool isValid = int.TryParse(Console.ReadLine(), out userAnswer) && userAnswer >= 1 && userAnswer <= 4;
-
-                        if (isValid)
-                        {
-                            string[] correctAnswerParts = answers[userAnswer - 1].Split('~');
-                            bool isCorrectAnswer = correctAnswerParts[1].Trim().ToLower() == "true";
-
-                            if (isCorrectAnswer)
-                            {
-                                Console.WriteLine("Correct!");
-                                totalPoints += int.Parse(pointsPart);
-                            }
-                            else
-                            {
-                                Console.WriteLine("Incorrect!");
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid input.");
-                        }
-                        Console.Clear();
                     }
                 }
             }
@@ -86,6 +90,7 @@ public static class QuizManagement
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
+
 
     public static void AddQuiz()
     {
